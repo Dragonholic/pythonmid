@@ -159,6 +159,11 @@ department_set = [jupsu, gam, ne, psy, sin, an, ee, pe, jung, be, san, im, so]
 department_numset = ["00","01","02","03","04","05","06","07","08","09","10","11","12"]
 
 
+working_people = []
+
+
+
+
 
 w_n = input()   #직원 수 입력
 w_n = int(w_n)  #직원 수
@@ -223,9 +228,12 @@ for i in range(p_n):
 
 
 
-
+total_revenue = 0    #총 수익
+total_expenditure = 0   #총 지출
 today = 0
 patient_count = 0
+lose_patient = 0
+patient_count_not = 0 #휴일 판단 카운트
 
 
 for i in range(p_n):
@@ -234,17 +242,47 @@ for i in range(p_n):
     process_code = Judgement_code(patient_code) #판단한 코드 배열
     department_num = Judgement_department_num(patient_code) #부서번호 저장
 
-    for j in range(13):                                     #진료
-        if department_numset[j] == department_num :
+    for j in range(13):                                     #어느 부서세요
+        if department_numset[j] == department_num :         #
             if department_set[j][4] == 0 :  #부서에 인원이 없으면 돌려보냄
-                break
+                lose_patient += 1           #놓친 인원 추가
+
             else:
-                for k in range (13):
+                for k in range (w_n):       #부서에 사람 찾기
                     if department_num == Judgement_department_num(worker_room[k]) :
-                        if Judement_workercode(worker_room[k])[2] != (today % 7) :        #휴일이면 진료안함
+
+                        if Judement_workercode(worker_room[k])[2] != (today % 7) :        #휴일 아니면 진료
 
                             department_set[j][2] += Judement_workercode(worker_room[k])[3]  # 부서 집합에 진료비 합산
+                            total_revenue += Judement_workercode(worker_room[k])[3] #총 수익에 진료비 합산
+                            #######################일한 사람 진료수익 계산해야함
+                            working_people.append(k)  #일한 사람 기록
+
                             patient_count += 1                  # 진료한 환자 +1
+                            patient_count_not = 0               # 후배 대신 진료
+                            if patient_count % 10 == 0:         # 10명 진료하면 날자 지남
+                                today += 1
+
+                        else :
+                            patient_count_not += 1
+
+                if patient_count_not !=  0:  # 환자가 휴일로 진료 못받았으면 놓친 인원 추가
+                    lose_patient += 1
+                    patient_count_not = 0
+
+
+
+
+
+
+    if today % 28 == 0 :                # 4주차 일요일날월급 제공
+        for j in range(w_n):
+            total_expenditure += int(Judement_workercode(worker_room[j])[3])
+
+
+
+
+
 
 
 
