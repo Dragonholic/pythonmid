@@ -3,6 +3,8 @@
 # 각환자 데이터는 다음과 같은 형식 가짐
 # 성별(1) + 나이(2) + 질병코드(3) + 접수유무(1)
 
+import turtle
+
 
 def Judgement_code(code): #주어진 코드 판단 함수
 
@@ -161,7 +163,8 @@ department_numset = ["00","01","02","03","04","05","06","07","08","09","10","11"
 
 working_people = []
 
-
+grap_data1 = []
+grap_data2 = []
 
 
 
@@ -373,6 +376,9 @@ worker_num = len(num_working_people)
 
 print("직원번호 소속부서 총진료수익 기여도")
 print("-------------------------------")
+for i in range(w_n):
+    grap_data1.append([i,0.0])  # 그래프 리스트 자리 생성
+
 for i in range(worker_num):
 
 
@@ -382,7 +388,9 @@ for i in range(worker_num):
     dep = Judgement_department_worker(worker_room[sorted_working_people[i][0]])
 
     print(sorted_working_people[i][0], dep , sorted_working_people[i][1], "%.2f" % contribution)
-
+    for j in range(w_n):
+        if sorted_working_people[i][0] == grap_data1[j][0] :
+            grap_data1[j][1] = float("%.2f" % contribution)
 
 print("-------------------------------")
 print("총 ", len(num_working_people), "명 ")
@@ -392,16 +400,158 @@ print("-------------------------------")
 print("부서번호 부서명 부서별진료수익 부서별기여도")
 print("-------------------------------")
 
-for i in range(13):
+for i in range(1,13):
+    depart = 0
     if department_set[i][2] != 0:
         depart = 100.0 / total_revenue * department_set[i][2]
-        print(department_set[i][0],department_set[i][1],department_set[i][2],"%.2f"%depart)
 
-#부서통계 출력
+
+        print(department_set[i][0],department_set[i][1],department_set[i][2],"%.2f"%depart)
+    grap_data2.append([i, float("%.2f" % depart)])
+
 print("-------------------------------")
 print("총 ",p_n,"명 ")
 
 
 
 
+#그래프출력
+# 터틀 그래픽 창을 엽니다
+window = turtle.Screen()
+window.title("병원통계")
 
+
+# 터틀 객체를 생성합니다
+pen1= turtle.Turtle()
+pen2 = turtle.Turtle()
+bpen = turtle.Turtle()
+rpen = turtle.Turtle()
+gpen = turtle.Turtle()
+
+bpen.color("blue")
+rpen.color("red")
+gpen.color("green")
+
+pen2.speed(0)  # 최대 속도로 설정
+bpen.speed(5)
+pen1.speed(0)
+rpen.speed(0)
+gpen.speed(0)
+
+#그래프1
+pen1.penup()
+pen1.goto(0-20, 0)
+pen1.pendown()
+pen1.goto(-300-20, 0)
+pen1.penup()
+pen1.goto(-300-20, 0)
+pen1.pendown()
+pen1.goto(-300-20, 300)
+pen1.penup()
+pen1.goto(-300-20, 300)
+pen1.write("기여도", align="center")
+pen1.goto(0-20, 0)
+pen1.write("직원번호", align="center")
+rpen.penup()
+rpen.goto(-320,300)
+rpen.pendown()
+rpen.goto(-20,300)
+rpen.write("100%")
+
+# 그래프 2
+pen2.penup()
+pen2.goto(0+20, 0)
+pen2.pendown()
+pen2.goto(300+20, 0)
+pen2.penup()
+pen2.goto(0+20, 0)
+pen2.pendown()
+pen2.goto(0+20, 300)
+pen2.penup()
+pen2.goto(300+20, 0)
+pen2.write("부서번호", align="center")
+pen2.goto(0+20, 300)
+pen2.write("기여도", align="center")
+rpen.penup()
+rpen.goto(20,300)
+rpen.pendown()
+rpen.goto(320,300)
+rpen.write("100%")
+
+
+for i in range(0-320,0-20,int(300/w_n)):
+    bpen.penup()
+    bpen.goto(i, -20)
+    bpen.pendown()
+    bpen.write(str(int((i+320)/300*w_n)))
+
+for i in range(20,340,int(300/12)):
+    bpen.penup()
+    bpen.goto(i, -20)
+    bpen.pendown()
+    bpen.write(str(int((i)/300*12)))
+
+bpen.penup()
+bpen.goto(-320, 0)
+bpen.pendown()
+
+grap_data1a =[]
+for i in range(w_n):
+    if i == grap_data1[i][0] :
+        grap_data1a.append(grap_data1[i])
+    elif i != grap_data1[i][0] :
+        grap_data1a.append([i,0])
+
+
+for x, y in grap_data1a:
+    bpen.goto(-320+x*300/w_n, y*3)
+    bpen.dot(5)  # 데이터 포인트를 점으로 표시
+    bpen.write(f'({x}, {y})', align='left')
+bpen.penup()
+bpen.forward(30)
+bpen.write("직원별 기여도",align="left")
+# 그래프를 그립니다
+
+aver1 =0
+
+for i in range(w_n):
+
+    aver1 += grap_data1a[i][1]
+aver1 = float("%.2f"%(aver1/w_n))
+
+gpen.penup()
+gpen.goto(-320,aver1)
+gpen.pendown()
+gpen.goto(-20,aver1)
+gpen.write(aver1)
+
+
+
+aver2 = 0
+for i in range(12):
+
+    aver2 += grap_data2[i][1]
+aver2 = float("%.2f"%(aver2/12))
+
+gpen.penup()
+gpen.goto(20,aver2)
+gpen.pendown()
+gpen.goto(320,aver2)
+gpen.write(aver2)
+
+# 그래프를 그리기 위한 데이터를 정의합니다
+
+bpen.penup()
+bpen.goto(20, 0)
+bpen.pendown()
+
+for x, y in grap_data2:
+    bpen.goto(20+x*300/12, y*3)
+    bpen.dot(5)  # 데이터 포인트를 점으로 표시
+    bpen.write(f'({x}, {y})', align='left')
+bpen.penup()
+bpen.forward(30)
+bpen.write("부서별 기여도",align="left")
+# 그래프를 그립니다
+
+turtle.exitonclick()
