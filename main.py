@@ -33,7 +33,7 @@ def Judgement_department(code):  #담당부서 판단 함수
         return '접수처'
     elif int(code[1]+code[2]) <20 :
         return  '소아청소년과'
-    elif code[3] == 'O' or code[3] == 'P' or code[3] == 'Q' or code[0]== 'F':
+    elif code[3] == 'O' or code[3] == 'P' or code[3] == 'Q' and code[0]== 'F':
         return  '산부인과'
 
     elif code[3] == 'A' or code[3] == 'B' or code[3] == 'C' or code[3] == 'D' :
@@ -65,10 +65,10 @@ def Judgement_department(code):  #담당부서 판단 함수
 
 def Judgement_department_num(code):  #담당부서 번호 판단 함수
     if code[6] == 'N':
-        return '접수처'
+        return '00'
     elif int(code[1] + code[2]) < 20:
         return '12'
-    elif code[3] == 'O' or code[3] == 'P' or code[3] == 'Q' or code[0]== 'F':
+    elif code[3] == 'O' or code[3] == 'P' or code[3] == 'Q' and code[0]== 'F':
         return  '10'
 
     elif code[3] == 'A' or code[3] == 'B' or code[3] == 'C' or code[3] == 'D' :
@@ -172,7 +172,7 @@ for i in range(w_n):
     worker_room.append(input()) #각 직원 직원번호 부여
 
 for j in range(w_n):
-    worker_code = waiting_room[j] # 각 직원 배속 부서확인
+    worker_code = worker_room[j] # 각 직원 배속 부서확인
 
     workplace_code = worker_code[0]+worker_code[1]
 
@@ -205,7 +205,7 @@ for j in range(w_n):
 
 
 for i in range(12):
-    if department_set[i] > 2:
+    if department_set[i][4] > 2:
         exit(-1)             #직원이 3명 이상인 경우 오류 처리
 
 
@@ -238,30 +238,63 @@ patient_count_not = 0 #휴일 판단 카운트
 
 for i in range(p_n):
     patient_code = waiting_room.pop(0) # 첫순서 뽑기
+
     department = Judgement_department(patient_code) #부서이름 저장
+
     process_code = Judgement_code(patient_code) #판단한 코드 배열
+
     department_num = Judgement_department_num(patient_code) #부서번호 저장
+
+    iswork = 0 #진료한 사람 표시
+
 
     for j in range(13):                                     #어느 부서세요
         if department_numset[j] == department_num :         #
             if department_set[j][4] == 0 :  #부서에 인원이 없으면 돌려보냄
                 lose_patient += 1           #놓친 인원 추가
 
+
+
             else:
+
                 for k in range (w_n):       #부서에 사람 찾기
-                    if department_num == Judgement_department_num(worker_room[k]) :
 
-                        if Judement_workercode(worker_room[k])[2] != (today % 7) :        #휴일 아니면 진료
 
-                            department_set[j][2] += Judement_workercode(worker_room[k])[3]  # 부서 집합에 진료비 합산
-                            total_revenue += Judement_workercode(worker_room[k])[3] #총 수익에 진료비 합산
-                            #######################일한 사람 진료수익 계산해야함
-                            working_people.append(k)  #일한 사람 기록
 
-                            patient_count += 1                  # 진료한 환자 +1
-                            patient_count_not = 0               # 후배 대신 진료
-                            if patient_count % 10 == 0:         # 10명 진료하면 날자 지남
-                                today += 1
+                    if department_num == Judgement_department_worker(worker_room[k]) : # 부서번호가 같으면
+
+
+
+                        if int(worker_room[k][2]) != (today % 7) :        #휴일 아니면 진료
+
+                            if iswork == 0 :
+
+
+
+
+
+                                if Judement_workercode(worker_room[k])[0] != "00" :                #접수처 제외하고 진료비 계산
+                                    bill = int(Judement_workercode(worker_room[k])[2])
+                                    department_set[j][2] += bill  # 부서 집합에 진료비 합산
+                                    total_revenue += bill #총 수익에 진료비 합산
+
+
+
+
+
+
+
+                                    working_people.append([k,int(Judement_workercode(worker_room[k])[2]),j]) # 근무표에 직원번호,  진료비, 소속부서 기록 - 추후 합산
+
+
+
+                                patient_count += 1                  # 진료한 환자 +1
+                                patient_count_not = 0               # 후배 대신 진료했다고 표시
+                                iswork = 1      #진료받은 환자 표시
+
+
+
+
 
                         else :
                             patient_count_not += 1
@@ -275,9 +308,16 @@ for i in range(p_n):
 
 
 
-    if today % 28 == 0 :                # 4주차 일요일날월급 제공
+
+
+    if today % 28 == 0 and today != 0 :                # 4주차 일요일날월급 제공
         for j in range(w_n):
             total_expenditure += int(Judement_workercode(worker_room[j])[3])
+
+
+    if patient_count % 10 == 0 and patient_count != 0:  # 10명 진료하면 날자 지남
+
+        today += 1
 
 
 
@@ -300,24 +340,66 @@ for i in range(p_n):
 
 #출력단
 
-print("-------------------------------\n")
-print("운영일수 총수입 총지출 실수입 처리환자 놓친환자\n")
-print("-------------------------------\n")
+print("-------------------------------")
+print("운영일수 총수입 총지출 실수입 처리환자 놓친환자")
+print("-------------------------------")
 #병원통계 출력
-print("-------------------------------\n")
-print("직원번호 소속부서 총진료수익 기여도\n")
-print("-------------------------------\n")
+print(today+1,total_revenue,total_expenditure,total_revenue-total_expenditure,patient_count,lose_patient)
+
+
+
+print("-------------------------------")
+
 #직원 성과 출력
 
+sum_dict = {} #직원 근무표의 각 요소의 첫 번째 요소를 더한 결과를 저장하는 딕셔너리 생성
 
-print("-------------------------------\n")
-print("총 ",non,"명 \n")
-print("-------------------------------\n")
-print("부서번호 부서명 남자수 여자수\n")
-print("-------------------------------\n")
+
+for sublist in working_people:
+    key = sublist[0]
+    tmp = sublist[2]
+    if key in sum_dict:
+        sum_dict[key] += sublist[1]
+
+    else:
+        sum_dict[key] = sublist[1]
+
+
+# 딕셔너리를 기반으로 근무표를 정렬
+sorted_working_people = [[key, sum_dict[key]] for key in sorted(sum_dict.keys())]
+num_working_people = [item[0] for item in sorted_working_people]
+worker_num = len(num_working_people)
+
+
+print("직원번호 소속부서 총진료수익 기여도")
+print("-------------------------------")
+for i in range(worker_num):
+
+
+    people = int(sorted_working_people[i][1])
+    contribution = 100.0 / total_revenue * people # 기여도 계산
+
+    dep = Judgement_department_worker(worker_room[sorted_working_people[i][0]])
+
+    print(sorted_working_people[i][0], dep , sorted_working_people[i][1], "%.2f" % contribution)
+
+
+print("-------------------------------")
+print("총 ", len(num_working_people), "명 ")
+print("-------------------------------")
+
+
+print("부서번호 부서명 부서별진료수익 부서별기여도")
+print("-------------------------------")
+
+for i in range(13):
+    if department_set[i][2] != 0:
+        depart = 100.0 / total_revenue * department_set[i][2]
+        print(department_set[i][0],department_set[i][1],department_set[i][2],"%.2f"%depart)
+
 #부서통계 출력
-print("-------------------------------\n")
-print("총 ",non,"명 \n")
+print("-------------------------------")
+print("총 ",p_n,"명 ")
 
 
 
